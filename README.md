@@ -6,8 +6,6 @@ _Fairway: The center, short-mown portion of a golf hole in between the teeing gr
 
 ## Usage
 ```
-$ ./bin/todo add --name foo
-```
 Usage: fairway [OPTIONS] PLAYERS_FILE COMMAND [ARGS]...
 
   Program to create fair Best Ball teams, evaluate their fairness, and
