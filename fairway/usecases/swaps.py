@@ -1,6 +1,7 @@
 import itertools
 from abc import ABC, abstractmethod
 from math import floor
+from typing import Tuple
 
 import inject
 
@@ -76,7 +77,7 @@ class SimpleSwapper(Swapper):
 
     def adjust_teams(self, tournament: Tournament):
         def try_swaps():
-            current_fairness = self._fairness_evaluator.get_fairness()
+            current_fairness = self._fairness_evaluator.get_fairness(tournament.teams)
             for players_to_swap in self._swap_generator.get_swaps(tournament):
                 swap(players_to_swap, tournament)
                 new_fairness = self._fairness_evaluator.get_fairness(tournament.teams)
@@ -91,12 +92,12 @@ class SimpleSwapper(Swapper):
                 break   # no improving swaps were found
 
 
-def swap(player_0: Player, player_1: Player, tournament: Tournament):
-    team_0 = tournament.get_team(player_0.team_id)
-    team_1 = tournament.get_team(player_1.team_id)
+def swap(players_to_swap: Tuple[Player, Player], tournament: Tournament):
+    team_0 = tournament.get_team(players_to_swap[0].team_id)
+    team_1 = tournament.get_team(players_to_swap[1].team_id)
 
-    team_0.remove_player(player_0)
-    team_1.remove_player(player_1)
+    team_0.remove_player(players_to_swap[0])
+    team_1.remove_player(players_to_swap[1])
 
-    team_0.add_player(player_1)
-    team_1.add_player(player_0)
+    team_0.add_player(players_to_swap[1])
+    team_1.add_player(players_to_swap[0])
