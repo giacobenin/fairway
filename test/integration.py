@@ -10,13 +10,13 @@ from fairway.usecases.interactors import create_teams
 
 # Config
 project_root = pathlib.Path(__file__).parent.parent
-allowance = 1.0
 players_file = project_root / 'data/players.csv'
 score_distribution_by_handicap_file = project_root / 'data/default_usga_handicap_distributions.csv'
+allowance = 1.0
 number_of_best_balls = 2
 number_of_teams = 4
 number_of_iterations = 500
-use_swaps = False
+use_swaps = True
 inject.configure(create_config(score_distribution_by_handicap_file, number_of_iterations))
 
 # Execute
