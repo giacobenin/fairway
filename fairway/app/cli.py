@@ -4,15 +4,11 @@ import click
 import inject
 from click import echo, INT, Path, IntRange
 
-from fairway.app.datasets import CSVDataset, read_teams, read_players
-from fairway.domain.game import Game
+from fairway.app.config import create_config
+from fairway.app.datasets import read_teams, read_players
 from fairway.domain.player import Player
-from fairway.usecases.bestball import BestBallGame
-from fairway.usecases.dataset import Dataset
-from fairway.usecases.fairness import FairnessEvaluator, MaxDifference
+
 from fairway.usecases.interactors import estimate_teams_fairness, create_teams
-from fairway.usecases.simulator import Simulator, MonteCarloSimulator
-from fairway.usecases.swaps import SwapGenerator, UnfairTeamsPairsWorsePlayersOnly, Swapper, SimpleSwapper
 
 
 @click.group()
@@ -58,7 +54,7 @@ def main(ctx, iterations, allowance: int, distributions: str, players_file: str,
         #'optimize': optimize
     }
     echo_config(iterations, allowance, distributions, players_file)
-    inject.configure(create_config(distributions, players_file, iterations))
+    inject.configure(create_config(distributions, iterations))
 
 
 @main.command()
@@ -105,26 +101,6 @@ def assign(ctx, nteams: int, optimize: bool):
     # Execute command
     tournament = create_teams(players, nteams, best_balls, allowance)
     echo_teams(tournament)
-
-
-def create_config(distributions, teams, number_of_iterations):
-    """
-
-    :return: function inject config
-    """
-    def config(binder):
-        binder.bind(SwapGenerator, UnfairTeamsPairsWorsePlayersOnly())
-        binder.bind(FairnessEvaluator, MaxDifference())
-        binder.bind(Dataset, CSVDataset(distributions))
-        binder.bind(Simulator, MonteCarloSimulator(number_of_iterations))
-        binder.bind_to_constructor(Game, BestBallGame)
-        binder.bind_to_constructor(Swapper, SimpleSwapper())
-    return config
-
-
-def print_help_msg(command):
-    with click.Context(command) as ctx:
-        click.echo(command.get_help(ctx))
 
 
 def echo_teams(tournament):
