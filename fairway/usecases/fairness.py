@@ -11,6 +11,11 @@ class FairnessEvaluator(ABC):
 
     @abstractmethod
     def get_fairness(self, teams: Iterable[Team]) -> float:
+        """
+
+        :param teams:
+        :return: and index of fairness: the smaller the fairer (yeah, I know...)
+        """
         pass
 
     @property
