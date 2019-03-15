@@ -82,11 +82,11 @@ class SimpleSwapper(Swapper):
             for players_to_swap in self._swap_generator.get_swaps(tournament):
                 swap(players_to_swap, tournament)
                 new_fairness = self._fairness_evaluator.get_fairness(tournament.teams)
-                if new_fairness > current_fairness:
-                    swap(players_to_swap)   # Not worth it, swap back
+                if new_fairness < current_fairness:
+                    logging.debug("Improved fairness: {} -> {}".format(current_fairness, new_fairness))
+                    return True  # Candidate swaps set needs to be recomputed upon player assignment changes
                 else:
-                    logging.debug("Improved fairness: {} -> {}", current_fairness, new_fairness)
-                    return True     # Candidate swaps set needs to be recomputed upon player assignment changes
+                    swap(players_to_swap, tournament)  # Not worth it, swap back
             return False    # No swap performed
 
         while not self._fairness_evaluator.is_fair_enough(tournament.teams):
