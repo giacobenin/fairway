@@ -20,5 +20,5 @@ def create_config(distributions, number_of_iterations):
         binder.bind(Dataset, CSVDataset(distributions))
         binder.bind(Simulator, MonteCarloSimulator(number_of_iterations))
         binder.bind_to_constructor(Game, BestBallGame)
-        binder.bind_to_constructor(Swapper, SimpleSwapper())
+        binder.bind_to_constructor(Swapper, SimpleSwapper)
     return config
