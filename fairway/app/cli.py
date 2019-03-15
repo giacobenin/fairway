@@ -105,7 +105,7 @@ def assign(ctx, nteams: int, optimize: bool):
 
 def echo_teams(tournament):
     for team in tournament.teams:
-        echo("Team {}; Estimated Score: {}. Prob. of Winning: {}. Members: {}"
+        echo("Team {}; Estimated Score: {}. Prob. of Winning: {}. Members (handicap): {}"
              .format(team.id, team.expected_score, team.prob_of_winning, [player.handicap for player in team.members]))
 
 
