@@ -1,3 +1,4 @@
+import logging
 import pathlib
 
 import inject
@@ -9,6 +10,7 @@ from fairway.usecases.interactors import create_teams
 
 
 # Config
+logging.basicConfig(level=logging.DEBUG)
 project_root = pathlib.Path(__file__).parent.parent
 players_file = project_root / 'data/players.csv'
 score_distribution_by_handicap_file = project_root / 'data/default_usga_handicap_distributions.csv'

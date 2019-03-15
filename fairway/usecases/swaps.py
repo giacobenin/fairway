@@ -1,4 +1,5 @@
 import itertools
+import logging
 from abc import ABC, abstractmethod
 from math import floor
 from typing import Tuple
@@ -84,6 +85,7 @@ class SimpleSwapper(Swapper):
                 if new_fairness > current_fairness:
                     swap(players_to_swap)   # Not worth it, swap back
                 else:
+                    logging.debug("Improved fairness: {} -> {}", current_fairness, new_fairness)
                     return True     # Candidate swaps set needs to be recomputed upon player assignment changes
             return False    # No swap performed
 

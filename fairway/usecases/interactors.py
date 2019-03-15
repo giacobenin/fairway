@@ -69,8 +69,8 @@ def create_teams(players: Iterable[Player], number_of_teams: int, number_of_best
         strategy.assign_players_to_teams(players, tournament.teams)
         tournament = estimate_teams_fairness(players, number_of_best_balls, allowance_adjustment)
         current_fairness = fairness_evaluator.get_fairness(tournament.teams)
-        logging.info("Strategy: {} Fairness: {}\tTeams: {}".
-                     format(strategy.__class__.__name__, current_fairness, tournament.teams))
+        logging.debug("Strategy: {} Fairness: {}\tTeams: {}".
+                      format(strategy.__class__.__name__, current_fairness, tournament.teams))
         if current_fairness < fairness:
             # Pick the fairest of all the assignments
             fairness = current_fairness
