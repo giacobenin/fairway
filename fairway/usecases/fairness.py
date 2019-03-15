@@ -25,7 +25,7 @@ class FairnessEvaluator(ABC):
 
 class MaxDifference(FairnessEvaluator):
 
-    def __init__(self, tolerance):
+    def __init__(self, tolerance: float = 0.1):
         super().__init__()
         self._tolerance = tolerance
 
