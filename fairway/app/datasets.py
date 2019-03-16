@@ -15,6 +15,8 @@ TeamRecord = namedtuple('TeamRecord', ['team_id', 'players'], verbose=False)
 class CSVDataset(Dataset):
 
     def __init__(self, handicap_distributions_file):
+        # Make this code a bit more portable. Older versions of loadtxt do not support pathlib
+        handicap_distributions_file = str(handicap_distributions_file)
         self._score_distributions = ScoreDistributions(loadtxt(fname=handicap_distributions_file, delimiter=',',
                                                                dtype=float))
 
