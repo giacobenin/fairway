@@ -83,7 +83,7 @@ class BestBallGame(Game):
     def _scenario(self, allowances: np.ndarray, player_handicaps: Iterable[int], teams=None, aggregate_by=None):
         while True:
             sample = self.simulator.sample_game_scenario(player_handicaps, self.number_of_holes)
-            s = np.add(self.simulator.sample_game_scenario(player_handicaps, self.number_of_holes), allowances)
+            s = np.add(sample, allowances)
             if teams:
                 s = self.to_team_scenario(s, teams)
 
@@ -109,39 +109,26 @@ class BestBallGame(Game):
         return team_scenarios
 
 
-def _update_scores(game_scenario, current_tot_scores):
-    n_players, _ = game_scenario.shape
-    scores = np.zeros(n_players)
-    for player_index in range(n_players):
-        scores[player_index] = np.sum(game_scenario[player_index, :])
-
-    tot_scores = np.add(current_tot_scores, scores)
-    return scores, tot_scores
-
-
 @coroutine
 def count_hole_wins():
     """
 
-    :return: counts the
+    :return: the number of holes that a player won, along with their scores
     """
     tot_scores = None
     curr_counts = dict()
     while True:
         game_scenario = (yield (tot_scores, curr_counts))
+        n_players, n_holes = game_scenario.shape
 
         # Update Scores
         if tot_scores is None:
-            n_players, _ = game_scenario.shape
             tot_scores = np.zeros(n_players, dtype=int)
         _, tot_scores = _update_scores(game_scenario, tot_scores)
 
         # Update Hole Win Counts
-        _, n_holes = game_scenario.shape
         for hole in range(n_holes):
-            hole_scores = game_scenario[:, hole]
-            winning_score = np.min(hole_scores)
-            winners = [idx for idx, score in enumerate(hole_scores) if score == winning_score]
+            winners = _find_winners(game_scenario[:, hole])
             for winner in winners:
                 curr_counts[winner] = curr_counts.get(winner, 0) + (1.0 / len(winners))
 
@@ -150,7 +137,7 @@ def count_hole_wins():
 def count_game_wins():
     """
 
-    :return:
+    :return: the number of games that a team won, along with their scores
     """
     tot_scores = None
     curr_counts = dict()
@@ -164,11 +151,21 @@ def count_game_wins():
         scores, tot_scores = _update_scores(game_scenario, tot_scores)
 
         # Update Game Win Counts
-        winners = game_winners(scores)
+        winners = _find_winners(scores)
         for winner in winners:
             curr_counts[winner] = curr_counts.get(winner, 0) + (1.0/len(winners))
 
 
-def game_winners(scores):
+def _update_scores(game_scenario, current_tot_scores):
+    n_players, _ = game_scenario.shape
+    scores = np.zeros(n_players)
+    for player_index in range(n_players):
+        scores[player_index] = np.sum(game_scenario[player_index, :])
+
+    tot_scores = np.add(current_tot_scores, scores)
+    return scores, tot_scores
+
+
+def _find_winners(scores):
     winning_score = np.min(scores)
     return tuple(idx for idx in range(len(scores)) if scores[idx] == winning_score)
