@@ -8,19 +8,21 @@ Player_Id = 0
 
 class Player(PlayingEntity):
 
-    def __init__(self, player_id: int, handicap_index: int, team_id=None):
+    def __init__(self, player_id: int, handicap_index: int, team_id=None,
+                 expected_score: float = 0.0, prob_of_winning: float = 0.0):
         assert isinstance(player_id, int)
         assert isinstance(handicap_index, int)
         assert isinstance(handicap_index, int)
         assert (0 <= handicap_index <= 36)
 
+        super().__init__(expected_score, prob_of_winning)
         self._player_id = player_id
         self._handicap = handicap_index
         self._allowances_by_hole = None
         self._team_id = team_id
 
     def __repr__(self):
-        return "<{}: id= {} ({}), handicap:{}, win prob.:{}, expected score:{}>".format(
+        return "{}: id= {} ({}), handicap:{}, win prob.:{}, expected score:{}".format(
             self.__class__.__name__, self.id, self.team_id, self.handicap, self.prob_of_winning, self.expected_score)
 
     @classmethod
