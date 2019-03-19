@@ -42,8 +42,9 @@ def read_teams(players_file):
 def _read_players(players_file, col_types, contains_header=False):
     """
     Generator that return PlayerRecord
-    :param self:
     :param players_file:
+    :param col_types:
+    :param contains_header:
     :return:
     """
     with open(players_file) as f:
