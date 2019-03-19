@@ -1,58 +1,29 @@
 import logging
-from collections import defaultdict
+from copy import deepcopy
 from sys import float_info
-from typing import Iterable
 
 import inject
 
-from fairway.domain.player import Player
+from fairway.domain.team import Team
 from fairway.domain.tournament import Tournament
 from fairway.usecases.assignment import ABCDByHandicap, ABCDByWinProbability, ZigZagByHandicap, \
     ZigZagByWinProbability, WeakestFirstByHandicap, WeakestFirstByWinProbability
-from fairway.usecases.bestball import BestBallGame
 from fairway.usecases.fairness import FairnessEvaluator
 from fairway.usecases.swaps import Swapper
 
 
-def estimate_teams_fairness(players: Iterable[Player], number_of_best_balls: int, allowance_adjustment: float) -> Tournament:
+def create_teams(tournament: Tournament, optimize: bool) -> (Tournament, str):
     """
-    Simulate a game where players play in teams
-    :param players:
-    :param number_of_best_balls:
-    :param allowance_adjustment:
-    :return:
+
+    :param tournament:
+    :param optimize:
+    :return: the fairest team that could be found, along with the assignment heuristic that was used to find it
     """
-    # Group players by team
-    players_by_team = defaultdict(list)
-    for player in players:
-        players_by_team[player.team_id].append(player)
-
-    # Create tournament
-    game = BestBallGame(number_of_best_balls=number_of_best_balls)
-    tournament = Tournament(game, players, len(players_by_team), allowance_adjustment)
-    for team, team_members in zip(tournament.teams, players_by_team.values()):
-        team.add_players(team_members)
-
-    # Play game
-    game.play_team_game(tournament.players, tournament.teams)
-
-    return tournament
-
-
-def create_teams(players: Iterable[Player], number_of_teams: int, number_of_best_balls: int, allowance_adjustment: float, optimize: bool) -> Tournament:
-
-    for player in players:
-        assert (player.team_id is None)
-
-    fairness_evaluator = inject.instance(FairnessEvaluator)
-    game = BestBallGame(number_of_best_balls=number_of_best_balls)
-    tournament = Tournament(game, players, number_of_teams, allowance_adjustment)
 
     # Play individual game
-    game.play_individual_game(players)
-
-    for player in players:
-        print(player)
+    tournament.game.play_individual_game(tournament.players)
+    for player in tournament.players:
+        logging.info("{}".format(player))
 
     # Assign players to teams
     assignment_strategies = [
@@ -61,30 +32,34 @@ def create_teams(players: Iterable[Player], number_of_teams: int, number_of_best
         WeakestFirstByHandicap(), WeakestFirstByWinProbability()
     ]
 
+    fairness_evaluator = inject.instance(FairnessEvaluator)
     fairest_assignment = None
-    fairest_tournament = None
     fairness = float_info.max
     for strategy in assignment_strategies:
-        tournament = Tournament(game, players, number_of_teams, allowance_adjustment)
-        strategy.assign_players_to_teams(players, tournament.teams)
-        tournament = estimate_teams_fairness(players, number_of_best_balls, allowance_adjustment)
-        current_fairness = fairness_evaluator.get_fairness(tournament.teams)
-        logging.debug("Strategy: {} Fairness: {}\tTeams: {}".
-                      format(strategy.__class__.__name__, current_fairness, tournament.teams))
+        curr_players = tuple(deepcopy(p) for p in tournament.players)
+        curr_teams = tuple(Team(t.id) for t in tournament.teams)
+        strategy.assign_players_to_teams(curr_players, curr_teams)
+        tournament.game.play_team_game(curr_players, curr_teams)
+        current_fairness = fairness_evaluator.get_fairness(curr_teams)
+        logging.info("Strategy: {} Fairness: {}\nTeams: {}".
+                     format(strategy.__class__.__name__, current_fairness, curr_teams))
         if current_fairness < fairness:
             # Pick the fairest of all the assignments
             fairness = current_fairness
-            fairest_tournament = tournament
-            fairest_assignment = {player.id: player.team_id for player in players}  # Remember the assignment
+            fairest_assignment = (curr_players, curr_teams, strategy.__class__.__name__)
 
-    # Re-apply the fairest assignment
-    for player in players:
-        player.team_id = fairest_assignment[player.id]
+    tournament = Tournament(tournament.game, fairest_assignment[0], tournament.allowance_adjustment, fairest_assignment[1])
 
     # Try to improve the fairest assignment
     if optimize:
         swapper = inject.instance(Swapper)
-        swapper.adjust_teams(fairest_tournament)
+        swapper.adjust_teams(tournament)
 
+    return tournament, fairest_assignment[2]
+
+
+def estimate_teams_fairness(tournament: Tournament) -> Tournament:
+    tournament = Tournament(tournament.game, tournament.players, tournament.allowance_adjustment, tournament.teams)
+    tournament.game.play_team_game(tournament.players, tournament.teams)
     return tournament
 

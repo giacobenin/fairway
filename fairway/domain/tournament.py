@@ -8,17 +8,17 @@ from fairway.domain.team import Team
 
 class Tournament(object):
     """
-    Aggregate root: contains teams, players, and game
+    Aggregate root: contains game, players, and teams (if not an individual game)
     """
-    def __init__(self, game: Game, players: Iterable[Player], number_of_teams: int, allowance_adjustment: float):
+    def __init__(self, game: Game, players: Iterable[Player], allowance_adjustment: float, teams: Iterable[Team] = None):
         assert isinstance(game, Game)
-        assert isinstance(number_of_teams, int)
-        assert (1 <= number_of_teams <= len(players))
+        if teams:
+            assert (1 <= len(teams) <= len(players))
         assert (0.0 <= allowance_adjustment <= 1.0)
         self.allowance_adjustment = allowance_adjustment
         self.game = game
         self._players = players
-        self.teams = tuple(Team.create() for i in range(number_of_teams))
+        self.teams = teams
         allowances = get_allowances(players, self.game.number_of_holes, allowance_adjustment)
         for index, player in enumerate(self._players):
             player.allowances_by_hole = allowances[index, :]
@@ -34,4 +34,3 @@ class Tournament(object):
 
     def number_of_teams(self):
         return len(self.teams)
-

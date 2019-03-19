@@ -7,6 +7,9 @@ from click import echo, INT, Path, IntRange
 from fairway.app.config import create_config
 from fairway.app.datasets import read_teams, read_players
 from fairway.domain.player import Player
+from fairway.domain.team import create_teams_from_pre_assigned_players, create_empty_teams
+from fairway.domain.tournament import Tournament
+from fairway.usecases.bestball import BestBallGame
 
 from fairway.usecases.interactors import estimate_teams_fairness, create_teams
 
@@ -74,7 +77,9 @@ def estimate(ctx):
                     for player_record in team.players)
 
     # Execute command
-    tournament = estimate_teams_fairness(players, best_balls, allowance)
+    game = BestBallGame(number_of_best_balls=best_balls)
+    teams = create_teams_from_pre_assigned_players(players)
+    tournament = estimate_teams_fairness(Tournament(game, players, allowance, teams))
     echo_teams(tournament)
 
 
@@ -89,6 +94,8 @@ def assign(ctx, nteams: int, optimize: bool):
     """
     Assign the input players to the desired number of teams
     :param ctx:
+    :param nteams:
+    :param optimize:
     :return:
     """
     allowance = ctx.obj['allowance']
@@ -99,7 +106,8 @@ def assign(ctx, nteams: int, optimize: bool):
     players = tuple(Player.create(player_record.handicap) for player_record in read_players(players_file))
 
     # Execute command
-    tournament = create_teams(players, nteams, best_balls, allowance)
+    game = BestBallGame(number_of_best_balls=best_balls)
+    tournament, _ = create_teams(Tournament(game, players, allowance, create_empty_teams(nteams)), optimize)
     echo_teams(tournament)
 
 
