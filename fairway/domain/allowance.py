@@ -22,7 +22,7 @@ def get_allowances(players: Iterable[Player], number_of_holes: int, allowance_ad
     for index, handicap in enumerate(handicaps):
         for hole in range(number_of_holes):
             allowance = 0
-            if hole <= (handicap * allowance_adjustment):
+            if hole < (handicap * allowance_adjustment):
                 allowance = get_allowance(hole, handicap - min_handicap, number_of_holes)
             allowances[index][hole] = allowance
     return allowances
