@@ -144,9 +144,9 @@ class BestBallGame(Game):
             idx = np.argpartition(current_team_scenario[:, current_hole], self.number_of_best_balls)
             return sum(all_members_scores[idx[:self.number_of_best_balls]])
 
-        team_scenario = np.zeros(len(teams), self.number_of_holes, type=float)
+        team_scenario = np.zeros((len(teams), self.number_of_holes), dtype=float)
         for i, team in enumerate(teams):
-            all_members_scenario = scenario[team[0]:team[-1], :]  # This expects team members' scores in contiguous rows
+            all_members_scenario = scenario[team[0]:team[-1]+1, :]  # This expects team members' scores in contiguous rows
             team_scenario[i] = [get_team_score_on_hole(all_members_scenario, hole) for hole in range(self.number_of_holes)]
 
         self.count_wins_by_hole(team_scenario, number_of_wins_by_hole)
