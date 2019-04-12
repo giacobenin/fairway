@@ -96,7 +96,7 @@ class BestBallGame(Game):
         :param teams:
         :return:
         """
-        fn, rows = (self._play_team_game, len(teams)) if teams else (self._play_individual_game, len(player_handicaps))
+        rows = len(teams) if teams else len(player_handicaps)
         scores_by_hole = np.zeros((rows, self.number_of_holes), dtype=float)
         wins_by_hole = np.zeros((rows, self.number_of_holes), dtype=float)
 
@@ -105,7 +105,10 @@ class BestBallGame(Game):
                 break
             scenario = np.add(sample, allowances)
 
-            scores_by_hole, wins_by_hole = fn(scenario, scores_by_hole, wins_by_hole)
+            if teams:
+                scores_by_hole, wins_by_hole = self._play_team_game(scenario, teams, scores_by_hole, wins_by_hole)
+            else:
+                scores_by_hole, wins_by_hole = self._play_individual_game(scenario, scores_by_hole, wins_by_hole)
 
         average_game_score = np.divide(np.sum(scores_by_hole, axis=1), self.simulator.number_of_iterations)
         scores_by_hole = np.divide(scores_by_hole, self.simulator.number_of_iterations)
