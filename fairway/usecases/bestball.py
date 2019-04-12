@@ -96,14 +96,9 @@ class BestBallGame(Game):
         :param teams:
         :return:
         """
-        if teams:
-            fn = self._play_team_game
-            scores_by_hole = np.zeros(len(teams), self.number_of_holes, type=float)
-            wins_by_hole = np.zeros(len(teams), self.number_of_holes, type=float)
-        else:
-            fn = self._play_individual_game
-            scores_by_hole = np.zeros(len(player_handicaps), self.number_of_holes, type=float)
-            wins_by_hole = np.zeros(len(player_handicaps), self.number_of_holes, type=float)
+        fn, rows = (self._play_team_game, len(teams)) if teams else (self._play_individual_game, len(player_handicaps))
+        scores_by_hole = np.zeros((rows, self.number_of_holes), dtype=float)
+        wins_by_hole = np.zeros((rows, self.number_of_holes), dtype=float)
 
         for count, sample in enumerate(self.simulator.sample_game_scenario(player_handicaps, self.number_of_holes)):
             if count >= self.simulator.number_of_iterations:
@@ -141,7 +136,11 @@ class BestBallGame(Game):
         """
         def get_team_score_on_hole(current_team_scenario, current_hole):
             all_members_scores = current_team_scenario[:, current_hole]
-            idx = np.argpartition(current_team_scenario[:, current_hole], self.number_of_best_balls)
+            current_team_scenario_by_hole = current_team_scenario[:, current_hole]
+            if self.number_of_best_balls >= len(current_team_scenario_by_hole):
+                idx = [range(len(current_team_scenario_by_hole))]
+            else:
+                idx = np.argpartition(current_team_scenario_by_hole, self.number_of_best_balls)
             return sum(all_members_scores[idx[:self.number_of_best_balls]])
 
         team_scenario = np.zeros((len(teams), self.number_of_holes), dtype=float)
