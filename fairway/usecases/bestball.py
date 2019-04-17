@@ -1,16 +1,12 @@
 from typing import Iterable
-
 import inject
-
 import numpy as np
-
-from operator import itemgetter
 from fairway.domain.game import Game
 from fairway.domain.player import Player
 from fairway.domain.playing_entity import PlayingEntity
 from fairway.domain.team import Team
 from fairway.usecases.simulator import Simulator
-from fairway.util.corutine import coroutine, limit
+from fairway.util.corutine import limit
 
 
 class BestBallGame(Game):
@@ -33,21 +29,18 @@ class BestBallGame(Game):
         return self._number_of_holes
 
     def play_individual_game(self, players: Iterable[Player]):
-        self._play(count_hole_wins(), players)
+        return self._play2(players)
 
     def play_team_game(self, players: Iterable[Player], teams: Iterable[Team]):
-        self._play(count_game_wins(), players, teams)
+        return self._play2(players, teams)
 
-    def _play2(self, counter_fn, players, teams=None) -> Iterable[PlayingEntity]:
+    def _play2(self, players, teams=None) -> Iterable[PlayingEntity]:
 
         # Vectorize objects for faster processing
-        vectorization_helper = VectorizationHelper(players, teams)
+        model = GameVectorizedModel(players, teams)
 
         scores_by_hole, average_game_score, prob_of_winning_by_hole = self._play_individual_or_team_games(
-            vectorization_helper.allowances(),
-            vectorization_helper.handicaps(),
-            vectorization_helper.teams()
-        )
+            model.allowances(), model.handicaps(), model.teams())
 
     def _play_individual_or_team_games(self, allowances, player_handicaps, teams=None):
         """
