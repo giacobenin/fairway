@@ -17,6 +17,7 @@ logging.basicConfig(level=logging.INFO, format='%(message)s')
 project_root = pathlib.Path(__file__).parent.parent
 players_file = project_root / 'data/players.csv'
 score_distribution_by_handicap_file = project_root / 'data/default_usga_handicap_distributions.csv'
+tolerance = 0.1     # Maximum gap allowed between most and least likely to win teams
 allowance = 1.0
 number_of_best_balls = 2
 number_of_teams = 4
@@ -24,7 +25,7 @@ number_of_iterations = 5000
 use_swaps = True
 
 # Prepare
-inject.configure(create_config(score_distribution_by_handicap_file, number_of_iterations))
+inject.configure(create_config(score_distribution_by_handicap_file, number_of_iterations, tolerance))
 game = BestBallGame(number_of_best_balls=number_of_best_balls)
 players = tuple(Player.create(player_record.handicap) for player_record in read_players(players_file))
 teams = create_empty_teams(number_of_teams)
