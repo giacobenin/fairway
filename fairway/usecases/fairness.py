@@ -36,7 +36,7 @@ class MaxDifference(FairnessEvaluator):
 
     def get_fairness(self, teams: Iterable[Team]) -> float:
         sorted_teams = sorted(teams)
-        return sorted_teams[-1].prob_of_winning - sorted_teams[0].prob_of_winning
+        return sorted_teams[-1].metrics.win_prob - sorted_teams[0].metrics.win_prob
 
     @property
     def tolerance(self) -> float:

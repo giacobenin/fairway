@@ -48,10 +48,9 @@ class MonteCarloSimulator(Simulator):
         n_players = len(player_handicaps)
         s = np.zeros((n_players, number_of_holes), dtype=np.int8)
         for row_index, handicap in enumerate(player_handicaps):
-            player_scenario = s[row_index, :]
             distribution = score_prob_distributions.get_distribution(handicap)
             scores = np.random.choice(score_prob_distributions.score_on_the_hole, number_of_holes, p=distribution)
-            np.copyto(player_scenario, scores)
+            np.copyto(s[row_index, :], scores)
         return s
 
     def reset(self):

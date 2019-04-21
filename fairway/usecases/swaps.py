@@ -38,10 +38,10 @@ class UnfairTeamsPairsWorsePlayersOnly(ABC):
         self._win_probability_filter = win_probability_filter
 
     def get_swaps(self, tournament: Tournament):
-        players_win_prob = [player.prob_of_winning for player in tournament.players]
+        players_win_prob = [player.metrics.win_prob for player in tournament.players]
         k = int(floor(len(players_win_prob) * self._win_probability_filter))  # Low 25%
 
-        swappable_players = [player for player in tournament.players if player.prob_of_winning < k]
+        swappable_players = [player for player in tournament.players if player.metrics.win_prob < k]
         swaps = [players_pair for players_pair in itertools.combinations(swappable_players, 2)
                  if players_pair[0].team_id != players_pair[1].team_id]
 
@@ -50,8 +50,8 @@ class UnfairTeamsPairsWorsePlayersOnly(ABC):
             player_1 = swap[1]
             team_0 = tournament.get_team(player_0.team_id)
             team_1 = tournament.get_team(player_1.team_id)
-            first_key = abs(team_0.prob_of_winning - team_1.prob_of_winning)  # The wider the team win prob gap, the better
-            second_key = 1.0 - (player_0.prob_of_winning - player_1.prob_of_winning)  # The closer the players win prob gap, the better
+            first_key = abs(team_0.metrics.win_prob - team_1.metrics.win_prob)  # The wider the team win prob gap, the better
+            second_key = 1.0 - (player_0.metrics.win_prob - player_1.metrics.win_prob)  # The closer the players win prob gap, the better
             return first_key, second_key
 
         swaps.sort(key=swap_sorting_criteria, reverse=True)

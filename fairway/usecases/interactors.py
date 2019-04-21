@@ -7,7 +7,7 @@ import inject
 from fairway.domain.team import Team
 from fairway.domain.tournament import Tournament
 from fairway.usecases.assignment import ABCDByHandicap, ABCDByWinProbability, ZigZagByHandicap, \
-    ZigZagByWinProbability, WeakestFirstByHandicap, WeakestFirstByWinProbability
+    ZigZagByWinProbability, WeakestFirstByHandicap, WeakestFirstByWinProbability, WeakestFirstByWinProbabilityByHole
 from fairway.usecases.fairness import FairnessEvaluator
 from fairway.usecases.swaps import Swapper
 
@@ -29,7 +29,9 @@ def create_teams(tournament: Tournament, optimize: bool) -> (Tournament, str):
     assignment_strategies = [
         ABCDByHandicap(), ABCDByWinProbability(),
         ZigZagByHandicap(), ZigZagByWinProbability(),
-        WeakestFirstByHandicap(), WeakestFirstByWinProbability()
+        WeakestFirstByHandicap(), WeakestFirstByWinProbability(),
+
+        *[WeakestFirstByWinProbabilityByHole(hole_index) for hole_index in range(18)]
     ]
 
     fairness_evaluator = inject.instance(FairnessEvaluator)
@@ -42,7 +44,7 @@ def create_teams(tournament: Tournament, optimize: bool) -> (Tournament, str):
         tournament.game.play_team_game(curr_players, curr_teams)
         current_fairness = fairness_evaluator.get_fairness(curr_teams)
         logging.info("Strategy: {} Fairness: {}\nTeams: {}".
-                     format(strategy.__class__.__name__, current_fairness, curr_teams))
+                     format(strategy, current_fairness, curr_teams))
         if current_fairness < fairness:
             # Pick the fairest of all the assignments
             fairness = current_fairness

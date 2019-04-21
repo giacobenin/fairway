@@ -1,28 +1,20 @@
-from abc import ABC, abstractmethod
+from abc import ABC
+
+from fairway.domain.metrics import Metrics
 
 
 class PlayingEntity(ABC):
 
-    def __init__(self, expected_score=0.0, prob_of_winning=0.0):
-        self._expected_score = expected_score
-        self._prob_of_winning = prob_of_winning
+    def __init__(self, metrics=Metrics(None, 0, None, 0)):
+        self._metrics = metrics
 
     @property
-    def expected_score(self):
-        return self._expected_score
+    def metrics(self):
+        return self._metrics
 
-    @expected_score.setter
-    def expected_score(self, score):
-        self._expected_score = score
-
-    @property
-    def prob_of_winning(self):
-        return self._prob_of_winning
-
-    @prob_of_winning.setter
-    def prob_of_winning(self, score):
-        self._prob_of_winning = score
+    @metrics.setter
+    def metrics(self, metrics):
+        self._metrics = metrics
 
     def reset(self):
-        self._expected_score = 0.0
-        self._prob_of_winning = 0.0
+        self._metrics = Metrics(None, 0, None, 0)

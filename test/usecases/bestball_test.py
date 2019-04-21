@@ -121,20 +121,22 @@ def test_play_team_game_two_best_ball_bis():
 
 def test_play_individual_or_team_games_individual():
     number_of_players, number_of_holes = scenario.shape
+    number_of_iterations = 3
     allowances = np.zeros(scenario.shape)
     fake_handicaps = [i for i in range(number_of_players)]
-    game = FakeBestBallGame(number_of_holes, 1, FakeSimulator(scenario, 3))
+    game = FakeBestBallGame(number_of_holes, 1, FakeSimulator(scenario, number_of_iterations))
 
-    scores_by_hole, average_game_score, prob_of_winning_by_hole = game._play_individual_or_team_games(allowances,
-                                                                                                      fake_handicaps)
+    metrics = game._play_individual_or_team_games(allowances, fake_handicaps)
 
-    np.testing.assert_array_equal(scores_by_hole, scenario)
-    np.testing.assert_array_equal(average_game_score, np.array([6, 15, 6, 6], np.float))
-    np.testing.assert_array_equal(prob_of_winning_by_hole, np.array([
-        [0.5, 1 / 3, 0],
+    np.testing.assert_array_equal(metrics.score_by_hole, scenario)
+    np.testing.assert_array_equal(metrics.avg_score, np.array([6, 15, 6, 6], np.float))
+    assert sum(metrics.win_prob) == 1.0
+    np.testing.assert_allclose(metrics.win_prob, np.array([0.5+(1/3.0), 0, 0.5+(1/3.0), (1/3.0)+1], np.float) / float(number_of_holes))
+    np.testing.assert_array_equal(metrics.win_prob_by_hole, np.array([
+        [0.5, 1 / 3.0, 0],
         [0, 0, 0],
-        [0.5, 1 / 3, 0],
-        [0, 1 / 3, 1]
+        [0.5, 1 / 3.0, 0],
+        [0, 1 / 3.0, 1]
     ], np.float))
 
 
@@ -145,16 +147,16 @@ def test_play_individual_or_team_games_team():
     teams = [(0, 1), (2, 3)]
     game = FakeBestBallGame(number_of_holes, 2, FakeSimulator(scenario, 3))
 
-    scores_by_hole, average_game_score, prob_of_winning_by_hole = game._play_individual_or_team_games(allowances,
-                                                                                                      fake_handicaps,
-                                                                                                      teams)
+    metrics = game._play_individual_or_team_games(allowances, fake_handicaps, teams)
 
-    np.testing.assert_array_equal(scores_by_hole, np.array([
+    np.testing.assert_array_equal(metrics.score_by_hole, np.array([
         [5, 7, 9],
         [3, 4, 5],
     ], np.int32))
-    np.testing.assert_array_equal(average_game_score, np.array([21, 12], np.float))
-    np.testing.assert_array_equal(prob_of_winning_by_hole, np.array([
+    np.testing.assert_array_equal(metrics.avg_score, np.array([21, 12], np.float))
+    assert sum(metrics.win_prob) == 1.0
+    np.testing.assert_array_equal(metrics.win_prob, np.array([0, 1], np.float))
+    np.testing.assert_array_equal(metrics.win_prob_by_hole, np.array([
         [0, 0, 0],
         [1, 1, 1],
     ], np.float))

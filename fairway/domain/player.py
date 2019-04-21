@@ -1,5 +1,6 @@
 import uuid
 
+from fairway.domain.metrics import Metrics
 from fairway.domain.playing_entity import PlayingEntity
 
 
@@ -15,7 +16,7 @@ class Player(PlayingEntity):
         assert isinstance(handicap_index, int)
         assert (0 <= handicap_index <= 36)
 
-        super().__init__(expected_score, prob_of_winning)
+        super().__init__(Metrics(expected_score, None, prob_of_winning, None))
         self._player_id = player_id
         self._handicap = handicap_index
         self._allowances_by_hole = None
@@ -23,7 +24,7 @@ class Player(PlayingEntity):
 
     def __repr__(self):
         return "{}: id= {} ({}), handicap:{}, win prob.:{}, expected score:{}".format(
-            self.__class__.__name__, self.id, self.team_id, self.handicap, self.prob_of_winning, self.expected_score)
+            self.__class__.__name__, self.id, self.team_id, self.handicap, self.metrics.win_prob, self.metrics.avg_score)
 
     @classmethod
     def create(cls, handicap_index: int, team_id: int = None):

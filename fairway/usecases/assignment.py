@@ -14,6 +14,9 @@ class AssignmentStrategy(object):
         self.player_goodness_criteria = player_goodness_criteria
         self.assignment_strategy = assignment_strategy
 
+    def __repr__(self):
+        return "{}".format(self.__class__.__name__)
+
     def assign_players_to_teams(self, players, teams):
         players_per_team = floor(len(players) / len(teams))
         larger_teams = len(players) % len(teams)   # If the number of teams is not a divisor of the number of players...
@@ -73,6 +76,15 @@ class WeakestFirstByWinProbability(AssignmentStrategy):
         super().__init__(goodness_win_prob, weakest_first)
 
 
+class WeakestFirstByWinProbabilityByHole(AssignmentStrategy):
+
+    def __init__(self, hole_index):
+        super().__init__(GoodnessWinProbByHole(hole_index).goodness, weakest_first)
+        self._hole_index = hole_index
+
+    def __repr__(self):
+        return "{}-{}".format(self.__class__.__name__, self._hole_index)
+
 # Functions to evaluate the goodness of a player, or of a team
 
 
@@ -83,7 +95,17 @@ def goodness_hcp(player):
 
 def goodness_win_prob(player):
     assert isinstance(player, Player)
-    return player.prob_of_winning
+    return player.metrics.win_prob
+
+
+class GoodnessWinProbByHole:
+
+    def __init__(self, hole_index):
+        self._hole_index = hole_index
+
+    def goodness(self, player):
+        assert isinstance(player, Player)
+        return player.metrics.win_prob_by_hole[self._hole_index]
 
 
 def goodness(team, player_goodness_criteria):

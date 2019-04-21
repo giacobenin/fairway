@@ -20,7 +20,7 @@ class Team(PlayingEntity):
         sorted_handicaps = sorted([int(player.handicap) for player in self._member_players])
         return "{} {} - Win Prob: {}. Expected score: {}. Handicaps: {}"\
             .format(self.__class__.__name__, self._team_id,
-                    self.prob_of_winning, self.expected_score, ','.join([str(h) for h in sorted_handicaps]))
+                    self.metrics.win_prob, self.metrics.avg_score, ','.join([str(h) for h in sorted_handicaps]))
 
     @classmethod
     def create(cls):
@@ -38,7 +38,7 @@ class Team(PlayingEntity):
         return tuple(member for member in self._member_players)
 
     def __lt__(self, other):
-        return self.prob_of_winning < other.prob_of_winning
+        return self.metrics.win_prob < other.metrics.win_prob
 
     def count(self):
         return len(self._member_players)
