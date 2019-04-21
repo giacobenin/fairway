@@ -24,7 +24,7 @@ class FairnessEvaluator(ABC):
         pass
 
     @abstractmethod
-    def is_fair_enough(self,teams: Iterable[Team]) -> bool:
+    def is_fair_enough(self, teams: Iterable[Team]) -> bool:
         pass
 
 
